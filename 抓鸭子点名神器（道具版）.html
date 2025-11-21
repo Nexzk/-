@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鸭子赛跑点名游戏 - 终极版</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        :root {
+            --primary: #FF6B35;
+            --secondary: #1A535C;
+            --accent: #4ECDC4;
+            --light: #F7FFF7;
+            --dark: #292F36;
+            --yellow: #FFE66D;
+            --blue: #1E90FF;
+            --green: #06D6A0;
+            --purple: #7209B7;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 3.2rem;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 0 var(--yellow);
+            letter-spacing: 1px;
+            background: linear-gradient(45deg, var(--primary), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: var(--secondary);
+            font-size: 1.4rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 25px 0;
+            text-align: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .stat-box {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 18px;
+            border-radius: 18px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            min-width: 140px;
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+        
+        .stat-box:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: var(--secondary);
+            margin-top: 5px;
+        }
+        
+        .river-container {
+            position: relative;
+            height: 700px; /* 减少高度，压缩留白 */
+            background: linear-gradient(to bottom, #4A90E2, #7FB3D5);
+            border-radius: 20px;
+            margin: 30px 0;
+            overflow: hidden;
+            border: 10px solid #2C5F9B;
+            box-shadow: 
+                inset 0 0 30px rgba(0, 0, 0, 0.3),
+                0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .river {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255,255,255,0.2) 5%, transparent 10%),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.2) 5%, transparent 10%),
+                radial-gradient(circle at 40% 20%, rgba(255,255,255,0.2) 5%, transparent 10%);
+            animation: river-flow 15s linear infinite;
+        }
+        
+        @keyframes river-flow {
+            0% { background-position: 0 0, 100px 50px, 200px 100px; }
+            100% { background-position: 100px 0, 200px 50px, 300px 100px; }
+        }
+        
+        .finish-line {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 20px;
+            height: 100%;
+            background: repeating-linear-gradient(
+                to bottom,
+                var(--primary),
+                var(--primary) 30px,
+                var(--light) 30px,
+                var(--light) 60px
+            );
+            z-index: 10;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.3);
+        }
+        
+        .finish-flag {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 4rem;
+            color: var(--primary);
+            z-index: 11;
+            filter: drop-shadow(3px 3px 2px rgba(0,0,0,0.3));
+            animation: flag-wave 2s infinite alternate;
+        }
+        
+        @keyframes flag-wave {
+            0% { transform: translateY(-50%) rotate(-5deg); }
+            100% { transform: translateY(-50%) rotate(5deg); }
+        }
+        
+        .duck {
+            position: absolute;
+            width: 80px; /* 增加鸭子大小 */
+            height: 80px;
+            transition: left 0.1s linear;
+            z-index: 5;
+            filter: drop-shadow(3px 3px 3px rgba(0,0,0,0.3));
+            animation: duck-float 3s infinite ease-in-out;
+        }
+        
+        @keyframes duck-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .duck-body {
+            position: absolute;
+            width: 60px; /* 增加鸭子身体大小 */
+            height: 50px;
+            background: var(--yellow);
+            border-radius: 50% 50% 40% 40%;
+            top: 20px;
+            left: 5px;
+            box-shadow: inset -3px -3px 5px rgba(0,0,0,0.1);
+        }
+        
+        .duck-head {
+            position: absolute;
+            width: 40px; /* 增加鸭子头部大小 */
+            height: 40px;
+            background: var(--yellow);
+            border-radius: 50%;
+            top: 5px;
+            left: 40px;
+            box-shadow: inset -2px -2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .duck-beak {
+            position: absolute;
+            width: 20px; /* 增加鸭子嘴巴大小 */
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            top: 20px;
+            left: 75px;
+        }
+        
+        .duck-eye {
+            position: absolute;
+            width: 8px; /* 增加鸭子眼睛大小 */
+            height: 8px;
+            background: var(--dark);
+            border-radius: 50%;
+            top: 12px;
+            left: 60px;
+        }
+        
+        .duck-eye::after {
+            content: '';
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            top: 1px;
+            left: 1px;
+        }
+        
+        .duck-wing {
+            position: absolute;
+            width: 25px; /* 增加鸭子翅膀大小 */
+            height: 18px;
+            background: #ffb347;
+            border-radius: 50%;
+            top: 30px;
+            left: 25px;
+            box-shadow: inset -2px -2px 5px rgba(0,0,0,0.1);
+            animation: wing-flap 1s infinite alternate;
+        }
+        
+        @keyframes wing-flap {
+            0% { transform: scaleY(1); }
+            100% { transform: scaleY(0.8); }
+        }
+        
+        .duck-name {
+            position: absolute;
+            top: -30px; /* 调整名字位置 */
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.9rem; /* 增加字体大小 */
+            font-weight: bold;
+            white-space: nowrap;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+            border: 1px solid rgba(0,0,0,0.1);
+            z-index: 6;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 16px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        button:hover::before {
+            left: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(-2px);
+        }
+        
+        .start-btn {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .reset-btn {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .import-btn {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .add-btn {
+            background: var(--yellow);
+            color: var(--dark);
+        }
+        
+        .input-area {
+            display: flex;
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        input {
+            flex: 1;
+            padding: 16px 20px;
+            border: 2px solid var(--accent);
+            border-radius: 50px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.9);
+        }
+        
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+        }
+        
+        .result-area {
+            text-align: center;
+            margin: 30px 0;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,230,109,0.2));
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border: 2px dashed var(--accent);
+        }
+        
+        .result {
+            font-size: 2.8rem;
+            color: var(--primary);
+            font-weight: bold;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .winner {
+            animation: winner-pulse 1s infinite, color-change 3s infinite, winner-glow 2s infinite;
+        }
+        
+        @keyframes winner-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes color-change {
+            0% { color: var(--primary); }
+            25% { color: #FF4500; }
+            50% { color: var(--purple); }
+            75% { color: #06D6A0; }
+            100% { color: var(--primary); }
+        }
+        
+        @keyframes winner-glow {
+            0%, 100% { text-shadow: 0 0 10px rgba(255,107,53,0.7); }
+            50% { text-shadow: 0 0 20px rgba(255,107,53,1), 0 0 30px rgba(255,230,109,0.7); }
+        }
+        
+        .lists-container {
+            display: flex;
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .name-list, .history-list {
+            flex: 1;
+            background: rgba(247, 255, 247, 0.9);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        h2 {
+            color: var(--secondary);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        ul {
+            list-style-type: none;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        ul::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ul::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+            border-radius: 10px;
+        }
+        
+        ul::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 10px;
+        }
+        
+        li {
+            padding: 12px 18px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.2s;
+        }
+        
+        li:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.12);
+        }
+        
+        .delete-btn {
+            background: #e63946;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .delete-btn:hover {
+            background: #c1121f;
+            transform: scale(1.1);
+        }
+        
+        .empty-message {
+            color: #999;
+            text-align: center;
+            padding: 30px;
+            font-style: italic;
+            font-size: 1.1rem;
+        }
+        
+        .waves {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40" preserveAspectRatio="none"><path d="M0,20 Q25,10 50,20 T100,20 L100,40 L0,40 Z" fill="%232C5F9B" opacity="0.6"/></svg>') repeat-x;
+            animation: waves 4s linear infinite;
+        }
+        
+        @keyframes waves {
+            0% { background-position: 0 0; }
+            100% { background-position: 100px 0; }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 35px;
+            border-radius: 25px;
+            width: 90%;
+            max-width: 700px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        .modal h3 {
+            color: var(--secondary);
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        
+        .modal textarea {
+            width: 100%;
+            height: 250px;
+            padding: 20px;
+            border: 2px solid var(--accent);
+            border-radius: 15px;
+            font-size: 1rem;
+            margin-bottom: 25px;
+            resize: vertical;
+            background: rgba(255,255,255,0.9);
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 15px;
+            height: 15px;
+            background: var(--primary);
+            opacity: 0;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        
+        .river-decoration {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .lily-pad {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: var(--green);
+            border-radius: 50%;
+            opacity: 0.7;
+            z-index: 2;
+        }
+        
+        .lily-pad::after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            top: 5px;
+            left: 5px;
+        }
+        
+        .bubble {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            animation: bubble-rise 8s infinite ease-in;
+        }
+        
+        @keyframes bubble-rise {
+            0% {
+                transform: translateY(0) scale(0.5);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.7;
+            }
+            90% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(-500px) scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .container {
+                max-width: 95%;
+            }
+            
+            .river-container {
+                height: 600px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .lists-container {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .river-container {
+                height: 500px;
+            }
+            
+            .input-area {
+                flex-direction: column;
+            }
+            
+            .result {
+                font-size: 2.2rem;
+            }
+        }
+        
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+            justify-content: center;
+        }
+        
+        .speed-control label {
+            font-weight: bold;
+            color: var(--secondary);
+        }
+        
+        .speed-control input {
+            width: 200px;
+            padding: 8px;
+        }
+        
+        .lane {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 60px; /* 减少泳道高度以适应更多泳道 */
+            border-bottom: 1px dashed rgba(255,255,255,0.3);
+            z-index: 1;
+        }
+        
+        .lane-number {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.7);
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: var(--secondary);
+            z-index: 2;
+        }
+        
+        .race-progress {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(255,255,255,0.8);
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--secondary);
+            z-index: 10;
+        }
+        
+        .ranking-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 10px;
+            padding: 15px;
+            max-width: 220px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        
+        .ranking-title {
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: 10px;
+            text-align: center;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 5px;
+        }
+        
+        .ranking-list {
+            list-style-type: none;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .ranking-item {
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .ranking-position {
+            font-weight: bold;
+            color: var(--primary);
+            width: 25px;
+            font-size: 1.1rem;
+        }
+        
+        .ranking-name {
+            flex: 1;
+            font-weight: bold;
+            padding: 0 8px;
+        }
+        
+        .ranking-progress {
+            color: var(--secondary);
+            font-size: 1rem;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: right;
+        }
+        
+        /* 添加排名数字的视觉差异 */
+        .ranking-item:nth-child(1) .ranking-position {
+            color: #FFD700; /* 金色 */
+            font-size: 1.3rem;
+        }
+        
+        .ranking-item:nth-child(2) .ranking-position {
+            color: #C0C0C0; /* 银色 */
+            font-size: 1.2rem;
+        }
+        
+        .ranking-item:nth-child(3) .ranking-position {
+            color: #CD7F32; /* 铜色 */
+            font-size: 1.1rem;
+        }
+        
+        .ranking-item:nth-child(1) .ranking-progress {
+            color: #FF4500; /* 红色 */
+            font-weight: bold;
+        }
+        
+        .ranking-item:nth-child(2) .ranking-progress {
+            color: #FF6347; /* 番茄红 */
+        }
+        
+        .ranking-item:nth-child(3) .ranking-progress {
+            color: #FF8C00; /* 深橙色 */
+        }
+        
+        /* 道具样式 */
+        .item {
+            position: absolute;
+            width: 45px; /* 增加道具大小 */
+            height: 45px;
+            border-radius: 50%;
+            z-index: 7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem; /* 增加道具图标大小 */
+            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
+            animation: item-float 2s infinite ease-in-out;
+        }
+        
+        @keyframes item-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        .speed-item {
+            background: #FF6B6B;
+            color: white;
+        }
+        
+        .swap-item {
+            background: #4ECDC4;
+            color: white;
+        }
+        
+        .slow-item {
+            background: #FFD166;
+            color: #333;
+        }
+        
+        .teleport-item {
+            background: #7209B7;
+            color: white;
+        }
+        
+        .shield-item {
+            background: #3A86FF;
+            color: white;
+        }
+        
+        .clone-item {
+            background: #06D6A0;
+            color: white;
+        }
+        
+        .item-effect {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 10px;
+            z-index: 20;
+            animation: effect-fade 1.5s forwards;
+        }
+        
+        @keyframes effect-fade {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-30px); }
+        }
+        
+        .speed-effect {
+            background: rgba(255, 107, 107, 0.8);
+        }
+        
+        .swap-effect {
+            background: rgba(78, 205, 196, 0.8);
+        }
+        
+        .slow-effect {
+            background: rgba(255, 209, 102, 0.8);
+        }
+        
+        .teleport-effect {
+            background: rgba(114, 9, 183, 0.8);
+        }
+        
+        .shield-effect {
+            background: rgba(58, 134, 255, 0.8);
+        }
+        
+        .clone-effect {
+            background: rgba(6, 214, 160, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-duck"></i> 鸭子赛跑点名游戏 - 终极版</h1>
+            <p class="subtitle">10条赛道 + 6种道具 + 100%完成比赛 + 更大的鸭子</p>
+        </header>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-value" id="totalStudents">0</div>
+                <div class="stat-label">总学生数</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="totalRaces">0</div>
+                <div class="stat-label">比赛次数</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="lastWinner">-</div>
+                <div class="stat-label">上次获胜者</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="maxStudents">50</div>
+                <div class="stat-label">最大容量</div>
+            </div>
+        </div>
+        
+        <div class="speed-control">
+            <label for="speedRange">比赛速度:</label>
+            <input type="range" id="speedRange" min="1" max="10" value="5">
+            <span id="speedValue">中等</span>
+        </div>
+        
+        <div class="river-container">
+            <div class="river"></div>
+            <div class="river-decoration" id="riverDecoration"></div>
+            <div class="waves"></div>
+            <div class="finish-line"></div>
+            <div class="finish-flag"><i class="fas fa-flag-checkered"></i></div>
+            <div id="lanes-container"></div>
+            <div id="ducks-container"></div>
+            <div id="items-container"></div>
+            <div class="race-progress" id="raceProgress">比赛准备中...</div>
+            <div class="ranking-container">
+                <div class="ranking-title">实时排名</div>
+                <ul class="ranking-list" id="rankingList">
+                    <li class="ranking-item"><span class="ranking-position">-</span><span class="ranking-name">等待比赛开始</span><span class="ranking-progress">-</span></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="result-area">
+            <div class="result" id="result">点击开始按钮，观看鸭子赛跑！</div>
+            <p id="result-subtitle">准备好开始一场有趣的比赛了吗？</p>
+        </div>
+        
+        <div class="controls">
+            <button class="start-btn" id="startBtn">
+                <i class="fas fa-play"></i> 开始赛跑
+            </button>
+            <button class="reset-btn" id="resetBtn">
+                <i class="fas fa-redo"></i> 重置比赛
+            </button>
+            <button class="import-btn" id="importBtn">
+                <i class="fas fa-file-import"></i> 导入名单
+            </button>
+            <button class="add-btn" id="addBtn">
+                <i class="fas fa-plus"></i> 添加学生
+            </button>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="nameInput" placeholder="输入学生姓名，按回车添加">
+            <button class="add-btn" id="addBtn2">
+                <i class="fas fa-plus-circle"></i> 添加
+            </button>
+        </div>
+        
+        <div class="lists-container">
+            <div class="name-list">
+                <h2><i class="fas fa-list"></i> 学生名单 (<span id="count">0</span>)</h2>
+                <ul id="nameList">
+                    <li class="empty-message">名单为空，请添加学生</li>
+                </ul>
+            </div>
+            
+            <div class="history-list">
+                <h2><i class="fas fa-history"></i> 获胜历史</h2>
+                <ul id="historyList">
+                    <li class="empty-message">暂无历史记录</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <h3><i class="fas fa-file-import"></i> 导入班级名单</h3>
+            <p>请输入学生姓名，每行一个（最多50名学生）：</p>
+            <textarea id="importTextarea" placeholder="例如：
+张三
+李四
+王五
+赵六"></textarea>
+            <div class="modal-buttons">
+                <button class="reset-btn" id="cancelImport">
+                    <i class="fas fa-times"></i> 取消
+                </button>
+                <button class="start-btn" id="confirmImport">
+                    <i class="fas fa-check"></i> 确认导入
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取DOM元素
+            const startBtn = document.getElementById('startBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const importBtn = document.getElementById('importBtn');
+            const addBtn = document.getElementById('addBtn');
+            const addBtn2 = document.getElementById('addBtn2');
+            const nameInput = document.getElementById('nameInput');
+            const result = document.getElementById('result');
+            const resultSubtitle = document.getElementById('result-subtitle');
+            const nameList = document.getElementById('nameList');
+            const historyList = document.getElementById('historyList');
+            const countElement = document.getElementById('count');
+            const ducksContainer = document.getElementById('ducks-container');
+            const lanesContainer = document.getElementById('lanes-container');
+            const itemsContainer = document.getElementById('items-container');
+            const importModal = document.getElementById('importModal');
+            const importTextarea = document.getElementById('importTextarea');
+            const cancelImport = document.getElementById('cancelImport');
+            const confirmImport = document.getElementById('confirmImport');
+            const totalStudents = document.getElementById('totalStudents');
+            const totalRaces = document.getElementById('totalRaces');
+            const lastWinner = document.getElementById('lastWinner');
+            const riverDecoration = document.getElementById('riverDecoration');
+            const speedRange = document.getElementById('speedRange');
+            const speedValue = document.getElementById('speedValue');
+            const raceProgress = document.getElementById('raceProgress');
+            const rankingList = document.getElementById('rankingList');
+            
+            // 初始化名单和历史记录
+            let nameArray = [];
+            let historyArray = [];
+            let isRacing = false;
+            let raceInterval;
+            let duckPositions = {};
+            let duckElements = {};
+            let duckSpeeds = {};
+            let duckEffects = {}; // 存储每只鸭子的道具效果
+            let stats = {
+                races: 0,
+                lastWinner: '-'
+            };
+            let raceSpeed = 5;
+            let items = []; // 存储道具信息
+            
+            // 鸭子颜色
+            let duckColors = [
+                '#FF6B6B', '#4ECDC4', '#FFD166', '#06D6A0', 
+                '#118AB2', '#EF476F', '#7BDFF2', '#B2F7EF',
+                '#F7B267', '#F25F5C', '#50514F', '#F2C57C',
+                '#7209B7', '#3A86FF', '#FB5607', '#FF006E'
+            ];
+            
+            // 事件监听
+            startBtn.addEventListener('click', startRace);
+            resetBtn.addEventListener('click', resetRace);
+            importBtn.addEventListener('click', () => importModal.style.display = 'flex');
+            addBtn.addEventListener('click', addName);
+            addBtn2.addEventListener('click', addName);
+            nameInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addName();
+            });
+            cancelImport.addEventListener('click', () => importModal.style.display = 'none');
+            confirmImport.addEventListener('click', importNames);
+            speedRange.addEventListener('input', updateSpeed);
+            
+            // 更新速度
+            function updateSpeed() {
+                raceSpeed = parseInt(speedRange.value);
+                const speedLabels = ['非常慢', '慢', '较慢', '稍慢', '中等', '稍快', '较快', '快', '很快', '非常快'];
+                speedValue.textContent = speedLabels[raceSpeed - 1];
+            }
+            
+            // 创建河流装饰
+            function createRiverDecoration() {
+                riverDecoration.innerHTML = '';
+                
+                // 创建睡莲
+                for (let i = 0; i < 12; i++) {
+                    const lilyPad = document.createElement('div');
+                    lilyPad.className = 'lily-pad';
+                    lilyPad.style.left = `${20 + Math.random() * 70}%`;
+                    lilyPad.style.top = `${30 + Math.random() * 60}%`;
+                    lilyPad.style.transform = `scale(${0.7 + Math.random() * 0.6})`;
+                    riverDecoration.appendChild(lilyPad);
+                }
+                
+                // 创建气泡
+                for (let i = 0; i < 25; i++) {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'bubble';
+                    bubble.style.left = `${Math.random() * 100}%`;
+                    bubble.style.bottom = `-20px`;
+                    bubble.style.animationDelay = `${Math.random() * 8}s`;
+                    bubble.style.width = `${5 + Math.random() * 15}px`;
+                    bubble.style.height = bubble.style.width;
+                    riverDecoration.appendChild(bubble);
+                }
+            }
+            
+            // 创建泳道
+            function createLanes() {
+                lanesContainer.innerHTML = '';
+                const laneCount = 10; // 增加到10条赛道
+                
+                for (let i = 0; i < laneCount; i++) {
+                    const lane = document.createElement('div');
+                    lane.className = 'lane';
+                    lane.style.top = `${50 + i * 60}px`; // 调整泳道位置，减少留白
+                    
+                    const laneNumber = document.createElement('div');
+                    laneNumber.className = 'lane-number';
+                    laneNumber.textContent = i + 1;
+                    
+                    lane.appendChild(laneNumber);
+                    lanesContainer.appendChild(lane);
+                }
+            }
+            
+            // 创建鸭子
+            function createDucks() {
+                ducksContainer.innerHTML = '';
+                duckPositions = {};
+                duckElements = {};
+                duckEffects = {};
+                
+                const maxDucks = 50;
+                const rows = 10; // 10行泳道
+                const ducksPerRow = Math.ceil(nameArray.length / rows);
+                
+                nameArray.forEach((name, index) => {
+                    // 计算行和列
+                    const row = Math.floor(index / ducksPerRow);
+                    const col = index % ducksPerRow;
+                    
+                    // 计算垂直位置 - 均匀分布，使用泳道
+                    const top = 50 + (row * 60) + (Math.random() * 20 - 10);
+                    
+                    // 创建鸭子元素
+                    const duck = document.createElement('div');
+                    duck.className = 'duck';
+                    duck.id = `duck-${index}`;
+                    duck.style.top = `${top}px`;
+                    duck.style.left = '0px'; // 初始位置为0
+                    
+                    // 随机分配颜色
+                    const colorIndex = index % duckColors.length;
+                    
+                    duck.innerHTML = `
+                        <div class="duck-body" style="background: ${duckColors[colorIndex]}"></div>
+                        <div class="duck-head" style="background: ${duckColors[colorIndex]}"></div>
+                        <div class="duck-beak"></div>
+                        <div class="duck-eye"></div>
+                        <div class="duck-wing" style="background: ${duckColors[colorIndex]}80"></div>
+                        <div class="duck-name">${name}</div>
+                    `;
+                    
+                    ducksContainer.appendChild(duck);
+                    
+                    // 初始化位置
+                    duckPositions[name] = 0;
+                    duckElements[name] = duck;
+                    duckEffects[name] = {
+                        speedBoost: 0,
+                        speedBoostEnd: 0,
+                        slowDown: 0,
+                        slowDownEnd: 0,
+                        shield: false,
+                        shieldEnd: 0,
+                        clone: false
+                    };
+                });
+                
+                updateStats();
+            }
+            
+            // 为比赛分配速度（每次比赛重新分配）
+            function assignSpeeds() {
+                duckSpeeds = {};
+                
+                // 确保每个学生的获胜概率更加平均
+                // 使用更窄的速度范围，减少速度差异
+                const baseSpeed = 0.15;
+                const speedVariation = 0.1;
+                
+                nameArray.forEach(name => {
+                    // 为每只鸭子分配固定速度
+                    // 使用更窄的速度范围，使比赛更加公平
+                    duckSpeeds[name] = baseSpeed + (Math.random() * speedVariation);
+                });
+            }
+            
+            // 创建道具
+            function createItems() {
+                itemsContainer.innerHTML = '';
+                items = [];
+                
+                // 创建5-8个道具
+                const itemCount = 5 + Math.floor(Math.random() * 4);
+                
+                for (let i = 0; i < itemCount; i++) {
+                    // 随机选择道具类型
+                    const itemTypes = ['speed', 'swap', 'slow', 'teleport', 'shield', 'clone'];
+                    const itemType = itemTypes[Math.floor(Math.random() * itemTypes.length)];
+                    
+                    // 随机位置
+                    const left = 20 + Math.random() * 60; // 20%到80%之间
+                    const top = 50 + Math.random() * 500; // 在泳道范围内
+                    
+                    // 创建道具元素
+                    const item = document.createElement('div');
+                    item.className = `item ${itemType}-item`;
+                    item.style.left = `${left}%`;
+                    item.style.top = `${top}px`;
+                    
+                    // 设置道具图标
+                    let icon;
+                    switch(itemType) {
+                        case 'speed':
+                            icon = '⚡';
+                            break;
+                        case 'swap':
+                            icon = '🔄';
+                            break;
+                        case 'slow':
+                            icon = '🐌';
+                            break;
+                        case 'teleport':
+                            icon = '✨';
+                            break;
+                        case 'shield':
+                            icon = '🛡️';
+                            break;
+                        case 'clone':
+                            icon = '📋';
+                            break;
+                    }
+                    
+                    item.textContent = icon;
+                    
+                    itemsContainer.appendChild(item);
+                    
+                    // 存储道具信息
+                    items.push({
+                        element: item,
+                        type: itemType,
+                        left: left,
+                        top: top,
+                        collected: false
+                    });
+                }
+            }
+            
+            // 检查道具碰撞
+            function checkItemCollisions() {
+                nameArray.forEach(name => {
+                    const duck = duckElements[name];
+                    const duckRect = duck.getBoundingClientRect();
+                    
+                    items.forEach((item, index) => {
+                        if (item.collected) return;
+                        
+                        const itemRect = item.element.getBoundingClientRect();
+                        
+                        // 简单的碰撞检测
+                        if (duckRect.left < itemRect.right &&
+                            duckRect.right > itemRect.left &&
+                            duckRect.top < itemRect.bottom &&
+                            duckRect.bottom > itemRect.top) {
+                            
+                            // 收集道具
+                            item.collected = true;
+                            item.element.style.display = 'none';
+                            
+                            // 应用道具效果
+                            applyItemEffect(name, item.type);
+                            
+                            // 显示效果提示
+                            showEffectMessage(name, item.type);
+                        }
+                    });
+                });
+            }
+            
+            // 应用道具效果
+            function applyItemEffect(duckName, itemType) {
+                const now = Date.now();
+                
+                switch(itemType) {
+                    case 'speed':
+                        // 加速效果持续3秒
+                        duckEffects[duckName].speedBoost = 0.3;
+                        duckEffects[duckName].speedBoostEnd = now + 3000;
+                        break;
+                    case 'swap':
+                        // 随机与另一只鸭子交换位置
+                        const otherDucks = nameArray.filter(name => name !== duckName);
+                        if (otherDucks.length > 0) {
+                            const randomDuck = otherDucks[Math.floor(Math.random() * otherDucks.length)];
+                            const tempPosition = duckPositions[duckName];
+                            duckPositions[duckName] = duckPositions[randomDuck];
+                            duckPositions[randomDuck] = tempPosition;
+                            
+                            // 更新位置
+                            duckElements[duckName].style.left = `${duckPositions[duckName]}%`;
+                            duckElements[randomDuck].style.left = `${duckPositions[randomDuck]}%`;
+                        }
+                        break;
+                    case 'slow':
+                        // 减速效果持续2秒
+                        duckEffects[duckName].slowDown = 0.2;
+                        duckEffects[duckName].slowDownEnd = now + 2000;
+                        break;
+                    case 'teleport':
+                        // 随机传送到赛道上的某个位置
+                        const newPosition = 10 + Math.random() * 70; // 10%到80%之间
+                        duckPositions[duckName] = newPosition;
+                        duckElements[duckName].style.left = `${newPosition}%`;
+                        break;
+                    case 'shield':
+                        // 护盾效果持续4秒，免疫负面效果
+                        duckEffects[duckName].shield = true;
+                        duckEffects[duckName].shieldEnd = now + 4000;
+                        break;
+                    case 'clone':
+                        // 复制最近一个正面效果
+                        duckEffects[duckName].clone = true;
+                        // 这里简化处理，直接给一个加速效果
+                        duckEffects[duckName].speedBoost = 0.2;
+                        duckEffects[duckName].speedBoostEnd = now + 2000;
+                        break;
+                }
+            }
+            
+            // 显示效果提示
+            function showEffectMessage(duckName, itemType) {
+                const duck = duckElements[duckName];
+                const duckRect = duck.getBoundingClientRect();
+                const containerRect = document.querySelector('.river-container').getBoundingClientRect();
+                
+                const effect = document.createElement('div');
+                effect.className = `item-effect ${itemType}-effect`;
+                
+                let message;
+                switch(itemType) {
+                    case 'speed':
+                        message = '加速！';
+                        break;
+                    case 'swap':
+                        message = '位置交换！';
+                        break;
+                    case 'slow':
+                        message = '减速！';
+                        break;
+                    case 'teleport':
+                        message = '瞬间传送！';
+                        break;
+                    case 'shield':
+                        message = '护盾保护！';
+                        break;
+                    case 'clone':
+                        message = '效果复制！';
+                        break;
+                }
+                
+                effect.textContent = message;
+                effect.style.left = `${duckRect.left - containerRect.left}px`;
+                effect.style.top = `${duckRect.top - containerRect.top - 30}px`;
+                
+                document.querySelector('.river-container').appendChild(effect);
+                
+                // 3秒后移除效果提示
+                setTimeout(() => {
+                    effect.remove();
+                }, 1500);
+            }
+            
+            // 更新排名
+            function updateRanking() {
+                // 创建排名数组
+                const ranking = Object.keys(duckPositions)
+                    .map(name => ({
+                        name,
+                        position: duckPositions[name]
+                    }))
+                    .sort((a, b) => b.position - a.position)
+                    .slice(0, 10); // 只显示前10名
+                
+                // 更新排名显示
+                rankingList.innerHTML = '';
+                
+                if (ranking.length === 0) {
+                    const li = document.createElement('li');
+                    li.className = 'ranking-item';
+                    li.innerHTML = '<span class="ranking-position">-</span><span class="ranking-name">等待比赛开始</span><span class="ranking-progress">-</span>';
+                    rankingList.appendChild(li);
+                    return;
+                }
+                
+                ranking.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'ranking-item';
+                    
+                    const positionSpan = document.createElement('span');
+                    positionSpan.className = 'ranking-position';
+                    positionSpan.textContent = index + 1;
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'ranking-name';
+                    nameSpan.textContent = item.name;
+                    
+                    const progressSpan = document.createElement('span');
+                    progressSpan.className = 'ranking-progress';
+                    // 显示一位小数，使排名差距更明显
+                    progressSpan.textContent = `${Math.min(100, parseFloat(item.position).toFixed(1))}%`;
+                    
+                    li.appendChild(positionSpan);
+                    li.appendChild(nameSpan);
+                    li.appendChild(progressSpan);
+                    
+                    rankingList.appendChild(li);
+                });
+            }
+            
+            // 开始赛跑
+            function startRace() {
+                if (nameArray.length === 0) {
+                    alert('请先添加学生到名单中！');
+                    return;
+                }
+                
+                if (isRacing) return;
+                
+                isRacing = true;
+                startBtn.disabled = true;
+                result.textContent = "比赛进行中...";
+                resultSubtitle.textContent = "鸭子们正在奋力向前游！";
+                result.classList.remove('winner');
+                
+                // 重置所有鸭子的位置
+                nameArray.forEach(name => {
+                    duckPositions[name] = 0;
+                    duckElements[name].style.left = '0px';
+                    duckEffects[name] = {
+                        speedBoost: 0,
+                        speedBoostEnd: 0,
+                        slowDown: 0,
+                        slowDownEnd: 0,
+                        shield: false,
+                        shieldEnd: 0,
+                        clone: false
+                    };
+                });
+                
+                // 为比赛重新分配速度
+                assignSpeeds();
+                
+                // 创建道具
+                createItems();
+                
+                // 开始比赛
+                raceInterval = setInterval(() => {
+                    let allFinished = true;
+                    let leader = null;
+                    let maxPosition = 0;
+                    const now = Date.now();
+                    
+                    nameArray.forEach(name => {
+                        if (duckPositions[name] < 100) { // 改为100%完成比赛
+                            // 基础速度
+                            let speed = duckSpeeds[name] * (raceSpeed / 5);
+                            
+                            // 应用道具效果
+                            if (duckEffects[name].speedBoost > 0 && now < duckEffects[name].speedBoostEnd) {
+                                speed += duckEffects[name].speedBoost;
+                            }
+                            
+                            if (duckEffects[name].slowDown > 0 && now < duckEffects[name].slowDownEnd) {
+                                // 如果有护盾，免疫减速效果
+                                if (!duckEffects[name].shield || now >= duckEffects[name].shieldEnd) {
+                                    speed -= duckEffects[name].slowDown;
+                                    if (speed < 0.01) speed = 0.01; // 最小速度
+                                }
+                            }
+                            
+                            // 增加悬念：随机波动
+                            const randomFactor = 0.8 + Math.random() * 0.4; // 0.8到1.2之间
+                            speed *= randomFactor;
+                            
+                            // 落后追赶机制：落后越多，速度加成越多
+                            const maxDuckPosition = Math.max(...Object.values(duckPositions));
+                            const positionDifference = maxDuckPosition - duckPositions[name];
+                            if (positionDifference > 10) {
+                                speed *= (1 + (positionDifference * 0.01)); // 每落后10%，速度增加1%
+                            }
+                            
+                            duckPositions[name] += speed;
+                            duckElements[name].style.left = `${duckPositions[name]}%`;
+                            allFinished = false;
+                            
+                            // 更新领先者
+                            if (duckPositions[name] > maxPosition) {
+                                maxPosition = duckPositions[name];
+                                leader = name;
+                            }
+                        }
+                    });
+                    
+                    // 检查道具碰撞
+                    checkItemCollisions();
+                    
+                    // 更新比赛进度
+                    if (leader) {
+                        // 显示一位小数，使进度差距更明显
+                        const progress = Math.min(100, parseFloat(maxPosition).toFixed(1));
+                        raceProgress.textContent = `领先者: ${leader} (${progress}%)`;
+                    }
+                    
+                    // 更新排名
+                    updateRanking();
+                    
+                    // 检查是否有鸭子到达终点（100%）
+                    let winner = null;
+                    nameArray.forEach(name => {
+                        if (duckPositions[name] >= 100 && isRacing) {
+                            winner = name;
+                        }
+                    });
+                    
+                    if (winner) {
+                        finishRace(winner);
+                    }
+                    
+                }, 50);
+            }
+            
+            // 结束比赛
+            function finishRace(winner) {
+                clearInterval(raceInterval);
+                isRacing = false;
+                startBtn.disabled = false;
+                
+                result.textContent = `恭喜 ${winner} 获胜！`;
+                resultSubtitle.textContent = "点击重置按钮开始新的比赛";
+                result.classList.add('winner');
+                raceProgress.textContent = `比赛结束！获胜者: ${winner}`;
+                
+                // 更新排名
+                updateRanking();
+                
+                // 添加到历史记录
+                const now = new Date();
+                const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                historyArray.unshift(`${winner} - ${timeString}`);
+                if (historyArray.length > 10) {
+                    historyArray = historyArray.slice(0, 10);
+                }
+                
+                // 更新统计信息
+                stats.races++;
+                stats.lastWinner = winner;
+                updateStats();
+                
+                updateHistoryList();
+                createConfetti();
+            }
+            
+            // 重置比赛
+            function resetRace() {
+                clearInterval(raceInterval);
+                isRacing = false;
+                startBtn.disabled = false;
+                
+                result.textContent = "点击开始按钮，观看鸭子赛跑！";
+                resultSubtitle.textContent = "准备好开始一场有趣的比赛了吗？";
+                result.classList.remove('winner');
+                raceProgress.textContent = "比赛准备中...";
+                
+                // 重置所有鸭子的位置
+                nameArray.forEach(name => {
+                    duckPositions[name] = 0;
+                    if (duckElements[name]) {
+                        duckElements[name].style.left = '0px';
+                    }
+                });
+                
+                // 移除道具
+                itemsContainer.innerHTML = '';
+                items = [];
+                
+                // 重置排名
+                updateRanking();
+            }
+            
+            // 添加姓名
+            function addName() {
+                const name = nameInput.value.trim();
+                if (name) {
+                    if (nameArray.length >= 50) {
+                        alert('已达到最大学生数（50名）！');
+                        return;
+                    }
+                    
+                    if (!nameArray.includes(name)) {
+                        nameArray.push(name);
+                        nameInput.value = '';
+                        updateNameList();
+                        createDucks();
+                        updateRanking();
+                    } else {
+                        alert('该学生已存在！');
+                    }
+                } else {
+                    alert('请输入有效的姓名！');
+                }
+            }
+            
+            // 导入名单
+            function importNames() {
+                const text = importTextarea.value.trim();
+                if (text) {
+                    let names = text.split('\n')
+                        .map(name => name.trim())
+                        .filter(name => name.length > 0);
+                    
+                    // 去重并限制最多50个
+                    names = [...new Set(names)].slice(0, 50);
+                    
+                    if (names.length > 0) {
+                        // 合并现有名单和新名单，去重并限制总数
+                        const combined = [...new Set([...nameArray, ...names])];
+                        if (combined.length > 50) {
+                            alert(`名单总数不能超过50个，将只保留前50个。当前有${combined.length}个。`);
+                            nameArray = combined.slice(0, 50);
+                        } else {
+                            nameArray = combined;
+                        }
+                        
+                        updateNameList();
+                        createDucks();
+                        updateRanking();
+                        importModal.style.display = 'none';
+                        importTextarea.value = '';
+                    } else {
+                        alert('请输入有效的姓名！');
+                    }
+                } else {
+                    alert('请输入要导入的名单！');
+                }
+            }
+            
+            // 更新名单显示
+            function updateNameList() {
+                nameList.innerHTML = '';
+                
+                if (nameArray.length === 0) {
+                    nameList.innerHTML = '<li class="empty-message">名单为空，请添加学生</li>';
+                    countElement.textContent = '0';
+                    return;
+                }
+                
+                nameArray.forEach((name, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <span>${name}</span>
+                        <button class="delete-btn" data-index="${index}">×</button>
+                    `;
+                    nameList.appendChild(li);
+                });
+                
+                countElement.textContent = nameArray.length;
+                
+                // 添加删除事件监听
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        nameArray.splice(index, 1);
+                        updateNameList();
+                        createDucks();
+                        updateRanking();
+                    });
+                });
+                
+                updateStats();
+            }
+            
+            // 更新历史记录显示
+            function updateHistoryList() {
+                historyList.innerHTML = '';
+                
+                if (historyArray.length === 0) {
+                    historyList.innerHTML = '<li class="empty-message">暂无历史记录</li>';
+                    return;
+                }
+                
+                historyArray.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.textContent = `${index + 1}. ${item}`;
+                    historyList.appendChild(li);
+                });
+            }
+            
+            // 更新统计信息
+            function updateStats() {
+                totalStudents.textContent = nameArray.length;
+                totalRaces.textContent = stats.races;
+                lastWinner.textContent = stats.lastWinner;
+            }
+            
+            // 创建庆祝彩花
+            function createConfetti() {
+                for (let i = 0; i < 150; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.background = duckColors[Math.floor(Math.random() * duckColors.length)];
+                    confetti.style.opacity = '1';
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    document.body.appendChild(confetti);
+                    
+                    // 动画
+                    const animation = confetti.animate([
+                        { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
+                        { transform: `translateY(${window.innerHeight}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+                    ], {
+                        duration: 2000 + Math.random() * 2000,
+                        easing: 'cubic-bezier(0.1, 0.8, 0.2, 1)'
+                    });
+                    
+                    animation.onfinish = () => confetti.remove();
+                }
+            }
+            
+            // 初始化显示
+            createRiverDecoration();
+            createLanes();
+            updateNameList();
+            updateSpeed();
+            updateRanking();
+        });
+    </script>
+</body>
+</html>
